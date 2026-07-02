@@ -66,12 +66,12 @@ export async function createTeam(
     return { error: "Both teammates must be at the reunion" };
   }
 
-  const firstName = (fullName: string) => fullName.split(/\s+/)[0];
   const person1 = people.find((p) => p.id === person1Id)!;
   const person2 = people.find((p) => p.id === person2Id)!;
+  // Full names only — Korean names can't be split into first/last on spaces.
   const name =
     String(formData.get("team_name") ?? "").trim() ||
-    `${firstName(person1.name)} & ${firstName(person2.name)}`;
+    `${person1.name} & ${person2.name}`;
 
   // Rejoining players (lost cookie, new device) get their old team back,
   // keeping its runs and best score instead of duplicating the leaderboard.

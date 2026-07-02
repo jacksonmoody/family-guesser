@@ -18,7 +18,8 @@ const VERDICT_SCHEMA = {
     },
     matches_expected: {
       type: "boolean",
-      description: "Whether the answer expresses the expected relationship in either direction.",
+      description:
+        "Whether the answer expresses the expected relationship in either direction.",
     },
     direction: {
       type: "string",
@@ -47,7 +48,6 @@ export async function verifyWithLlm(input: {
       "- an honorific plus a first name ('grandma Ruth' counts as 'grandmother');",
       "- descriptive paths ('his dad's sister' means aunt; 'her mom's mom' means grandmother);",
       "- imprecise degree or removal for blood relationships: 'cousin' is correct for ANY cousin (second cousin, once removed, etc.), 'aunt' for 'great-aunt', and 'niece' for 'great-niece'.",
-      "Do NOT waive marriage/legal qualifiers: 'sister' is NOT correct for 'sister-in-law'; 'mother' is NOT correct for 'stepmother'; The answer must include the qualifier or a descriptive spouse/marriage path.",
       "Mark matches_expected=false when the relationship category is genuinely wrong (e.g. 'uncle' when they are cousins, 'sister' when she is his mother, 'no idea').",
     ].join("\n"),
     input: [
