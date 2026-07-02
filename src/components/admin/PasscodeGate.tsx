@@ -12,7 +12,7 @@ export function PasscodeGate() {
   return (
     <Card className="flex flex-col gap-4">
       <div className="text-center">
-        <h1 className="font-display text-2xl font-semibold">Organizer login</h1>
+        <h1 className="font-display text-2xl font-semibold">Admin Login</h1>
         <p className="mt-1 text-sm text-brown-700">
           Enter the admin passcode to manage the family tree.
         </p>
@@ -26,10 +26,12 @@ export function PasscodeGate() {
           required
         />
         {state?.error && (
-          <p className="text-center text-sm text-terracotta-600">{state.error}</p>
+          <p className="text-center text-sm text-terracotta-600">
+            {state.error}
+          </p>
         )}
         <Button type="submit" disabled={pending}>
-          {pending ? "Checking…" : "Unlock"}
+          {pending ? "Verifying..." : "Enter Admin Dashboard"}
         </Button>
       </form>
     </Card>

@@ -133,17 +133,45 @@ export async function deletePerson(
 }
 
 export async function addParentLink(
-  _prev: ActionResult | null,
-  formData: FormData,
+  parentId: string,
+  childId: string,
 ): Promise<ActionResult> {
   await requireAdmin();
-  const parentId = String(formData.get("parent_id") ?? "");
-  const childId = String(formData.get("child_id") ?? "");
   if (!parentId || !childId) return { ok: false, error: "Pick both people" };
   if (parentId === childId) {
     return { ok: false, error: "Someone can't be their own parent" };
   }
   const supabase = createServerClient();
+
+  // Reject links that would make someone their own ancestor.
+  const { data: links, error: linksError } = await supabase
+    .from("parent_links")
+    .select("*");
+  if (linksError) return { ok: false, error: linksError.message };
+  const parentsOf = new Map<string, string[]>();
+  for (const link of links) {
+    const list = parentsOf.get(link.child_id);
+    if (list) list.push(link.parent_id);
+    else parentsOf.set(link.child_id, [link.parent_id]);
+  }
+  const seen = new Set<string>([parentId]);
+  let frontier = [parentId];
+  while (frontier.length > 0) {
+    const next: string[] = [];
+    for (const id of frontier) {
+      for (const ancestorId of parentsOf.get(id) ?? []) {
+        if (ancestorId === childId) {
+          return { ok: false, error: "That link would create an ancestry loop" };
+        }
+        if (!seen.has(ancestorId)) {
+          seen.add(ancestorId);
+          next.push(ancestorId);
+        }
+      }
+    }
+    frontier = next;
+  }
+
   const { error } = await supabase
     .from("parent_links")
     .insert({ parent_id: parentId, child_id: childId });
@@ -153,32 +181,27 @@ export async function addParentLink(
 }
 
 export async function deleteParentLink(
-  _prev: ActionResult | null,
-  formData: FormData,
+  parentId: string,
+  childId: string,
 ): Promise<ActionResult> {
   await requireAdmin();
   const supabase = createServerClient();
   const { error } = await supabase
     .from("parent_links")
     .delete()
-    .eq("parent_id", String(formData.get("parent_id")))
-    .eq("child_id", String(formData.get("child_id")));
+    .eq("parent_id", parentId)
+    .eq("child_id", childId);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin");
   return { ok: true };
 }
 
-export async function addSpouseLink(
-  _prev: ActionResult | null,
-  formData: FormData,
-): Promise<ActionResult> {
+export async function addSpouseLink(a: string, b: string): Promise<ActionResult> {
   await requireAdmin();
-  const rawA = String(formData.get("person1_id") ?? "");
-  const rawB = String(formData.get("person2_id") ?? "");
-  if (!rawA || !rawB) return { ok: false, error: "Pick both people" };
-  if (rawA === rawB) return { ok: false, error: "Someone can't marry themselves" };
+  if (!a || !b) return { ok: false, error: "Pick both people" };
+  if (a === b) return { ok: false, error: "Someone can't marry themselves" };
   // Table stores the pair in canonical order (person1_id < person2_id).
-  const [person1Id, person2Id] = rawA < rawB ? [rawA, rawB] : [rawB, rawA];
+  const [person1Id, person2Id] = a < b ? [a, b] : [b, a];
   const supabase = createServerClient();
   const { error } = await supabase
     .from("spouses")
@@ -188,17 +211,15 @@ export async function addSpouseLink(
   return { ok: true };
 }
 
-export async function deleteSpouseLink(
-  _prev: ActionResult | null,
-  formData: FormData,
-): Promise<ActionResult> {
+export async function deleteSpouseLink(a: string, b: string): Promise<ActionResult> {
   await requireAdmin();
+  const [person1Id, person2Id] = a < b ? [a, b] : [b, a];
   const supabase = createServerClient();
   const { error } = await supabase
     .from("spouses")
     .delete()
-    .eq("person1_id", String(formData.get("person1_id")))
-    .eq("person2_id", String(formData.get("person2_id")));
+    .eq("person1_id", person1Id)
+    .eq("person2_id", person2Id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin");
   return { ok: true };

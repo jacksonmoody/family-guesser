@@ -73,12 +73,29 @@ export async function createTeam(
     String(formData.get("team_name") ?? "").trim() ||
     `${firstName(person1.name)} & ${firstName(person2.name)}`;
 
-  const { data: team, error: teamError } = await supabase
+  // Rejoining players (lost cookie, new device) get their old team back,
+  // keeping its runs and best score instead of duplicating the leaderboard.
+  // IDs are safe to interpolate — both were validated against `people` above.
+  const { data: existing } = await supabase
     .from("teams")
-    .insert({ name, person1_id: person1Id, person2_id: person2Id })
     .select("id")
-    .single();
-  if (teamError) return { error: teamError.message };
+    .or(
+      `and(person1_id.eq.${person1Id},person2_id.eq.${person2Id}),and(person1_id.eq.${person2Id},person2_id.eq.${person1Id})`,
+    )
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  let teamId = existing?.id;
+  if (!teamId) {
+    const { data: team, error: teamError } = await supabase
+      .from("teams")
+      .insert({ name, person1_id: person1Id, person2_id: person2Id })
+      .select("id")
+      .single();
+    if (teamError) return { error: teamError.message };
+    teamId = team.id;
+  }
 
   for (const [personId, field] of [
     [person1Id, "photo1"],
@@ -88,12 +105,13 @@ export async function createTeam(
     if (file instanceof File && file.size > 0) {
       try {
         await uploadTeamPhoto(personId, file);
-      } catch {
+      } catch (error) {
         // A failed photo shouldn't block the game — the avatar falls back to initials.
+        console.error(`Photo upload failed for person ${personId}:`, error);
       }
     }
   }
 
-  await setTeamCookie(team.id);
+  await setTeamCookie(teamId);
   redirect("/play");
 }

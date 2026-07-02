@@ -189,10 +189,7 @@ export function RunScreen({
   const minutes = Math.floor(remaining / 60);
   const seconds = Math.floor(remaining % 60);
   const urgent = remaining <= 60;
-  const loadingSkippedQuestion =
-    pending &&
-    feedback?.verdict === "skipped" &&
-    feedback.correctSentence === "Loading the answer";
+  const calculatingSkippedAnswer = pending && feedback?.verdict === "skipped";
 
   // ---------- Active run ----------
   return (
@@ -239,11 +236,11 @@ export function RunScreen({
           <Button
             variant="primary"
             onClick={dismissFeedback}
-            disabled={loadingSkippedQuestion}
+            disabled={calculatingSkippedAnswer}
             className="w-full"
           >
-            {loadingSkippedQuestion
-              ? "Loading Next Question..."
+            {calculatingSkippedAnswer
+              ? "Next Question..."
               : timeUp || !question
                 ? "Finish"
                 : "Next Question"}

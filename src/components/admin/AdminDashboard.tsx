@@ -2,12 +2,8 @@
 
 import { useActionState, useState } from "react";
 import {
-  addParentLink,
   addPerson,
-  addSpouseLink,
-  deleteParentLink,
   deletePerson,
-  deleteSpouseLink,
   updatePerson,
   type ActionResult,
 } from "@/app/actions/admin";
@@ -18,12 +14,13 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Select } from "@/components/ui/Input";
 import { PhotoUpload } from "@/components/PhotoUpload";
+import { TreeEditor } from "@/components/admin/tree/TreeEditor";
 
 type PersonRow = Database["public"]["Tables"]["people"]["Row"];
 type ParentLink = Database["public"]["Tables"]["parent_links"]["Row"];
 type SpouseLink = Database["public"]["Tables"]["spouses"]["Row"];
 
-const TABS = ["People", "Parents", "Spouses"] as const;
+const TABS = ["People", "Family Tree"] as const;
 
 function ErrorNote({ state }: { state: ActionResult | null }) {
   if (!state?.error) return null;
@@ -77,7 +74,7 @@ function PersonCard({ person }: { person: PersonRow }) {
             {person.attending ? (
               <Badge tone="sage">at reunion</Badge>
             ) : (
-              <Badge tone="cream">tree only</Badge>
+              <Badge tone="cream">family tree only</Badge>
             )}
             {person.gender !== "other" && <Badge tone="cream">{person.gender}</Badge>}
           </div>
@@ -143,133 +140,6 @@ function PersonCard({ person }: { person: PersonRow }) {
   );
 }
 
-function PersonSelect({
-  name,
-  people,
-  placeholder,
-}: {
-  name: string;
-  people: PersonRow[];
-  placeholder: string;
-}) {
-  return (
-    <Select name={name} defaultValue="" required className="flex-1">
-      <option value="" disabled>
-        {placeholder}
-      </option>
-      {people.map((p) => (
-        <option key={p.id} value={p.id}>
-          {p.name}
-        </option>
-      ))}
-    </Select>
-  );
-}
-
-function ParentsTab({
-  people,
-  parentLinks,
-}: {
-  people: PersonRow[];
-  parentLinks: ParentLink[];
-}) {
-  const [addState, addAction, addPending] = useActionState(addParentLink, null);
-  const [, deleteAction] = useActionState(deleteParentLink, null);
-  const nameOf = (id: string) => people.find((p) => p.id === id)?.name ?? "?";
-
-  return (
-    <div className="flex flex-col gap-3">
-      <Card className="flex flex-col gap-3">
-        <h2 className="font-display text-lg font-semibold">Link parent → child</h2>
-        <form action={addAction} className="flex flex-col gap-2">
-          <PersonSelect name="parent_id" people={people} placeholder="Parent…" />
-          <PersonSelect name="child_id" people={people} placeholder="Child…" />
-          <ErrorNote state={addState} />
-          <Button type="submit" disabled={addPending}>
-            {addPending ? "Linking…" : "Add link"}
-          </Button>
-        </form>
-      </Card>
-      <ul className="flex flex-col gap-2">
-        {parentLinks.map((link) => (
-          <li
-            key={`${link.parent_id}:${link.child_id}`}
-            className="flex items-center justify-between rounded-xl border border-cream-200 bg-cream-100 px-3 py-2"
-          >
-            <span className="text-sm">
-              <span className="font-medium">{nameOf(link.parent_id)}</span>
-              <span className="text-brown-500"> is a parent of </span>
-              <span className="font-medium">{nameOf(link.child_id)}</span>
-            </span>
-            <form action={deleteAction}>
-              <input type="hidden" name="parent_id" value={link.parent_id} />
-              <input type="hidden" name="child_id" value={link.child_id} />
-              <button type="submit" className="px-2 text-terracotta-600" aria-label="Remove link">
-                ✕
-              </button>
-            </form>
-          </li>
-        ))}
-        {parentLinks.length === 0 && (
-          <p className="py-2 text-center text-sm text-brown-500">No parent links yet.</p>
-        )}
-      </ul>
-    </div>
-  );
-}
-
-function SpousesTab({
-  people,
-  spouseLinks,
-}: {
-  people: PersonRow[];
-  spouseLinks: SpouseLink[];
-}) {
-  const [addState, addAction, addPending] = useActionState(addSpouseLink, null);
-  const [, deleteAction] = useActionState(deleteSpouseLink, null);
-  const nameOf = (id: string) => people.find((p) => p.id === id)?.name ?? "?";
-
-  return (
-    <div className="flex flex-col gap-3">
-      <Card className="flex flex-col gap-3">
-        <h2 className="font-display text-lg font-semibold">Link spouses</h2>
-        <form action={addAction} className="flex flex-col gap-2">
-          <PersonSelect name="person1_id" people={people} placeholder="Spouse…" />
-          <PersonSelect name="person2_id" people={people} placeholder="Spouse…" />
-          <ErrorNote state={addState} />
-          <Button type="submit" disabled={addPending}>
-            {addPending ? "Linking…" : "Add marriage"}
-          </Button>
-        </form>
-      </Card>
-      <ul className="flex flex-col gap-2">
-        {spouseLinks.map((link) => (
-          <li
-            key={`${link.person1_id}:${link.person2_id}`}
-            className="flex items-center justify-between rounded-xl border border-cream-200 bg-cream-100 px-3 py-2"
-          >
-            <span className="text-sm">
-              <span className="font-medium">{nameOf(link.person1_id)}</span>
-              <span className="text-brown-500"> ♥ </span>
-              <span className="font-medium">{nameOf(link.person2_id)}</span>
-            </span>
-            <form action={deleteAction}>
-              <input type="hidden" name="person1_id" value={link.person1_id} />
-              <input type="hidden" name="person2_id" value={link.person2_id} />
-              <button type="submit" className="px-2 text-terracotta-600" aria-label="Remove link">
-                ✕
-              </button>
-            </form>
-          </li>
-        ))}
-        {spouseLinks.length === 0 && (
-          <p className="py-2 text-center text-sm text-brown-500">No marriages yet.</p>
-        )}
-      </ul>
-    </div>
-  );
-}
-
 export function AdminDashboard({
   people,
   parentLinks,
@@ -310,8 +180,13 @@ export function AdminDashboard({
           ))}
         </div>
       )}
-      {tab === "Parents" && <ParentsTab people={people} parentLinks={parentLinks} />}
-      {tab === "Spouses" && <SpousesTab people={people} spouseLinks={spouseLinks} />}
+      {tab === "Family Tree" && (
+        <TreeEditor
+          people={people}
+          parentLinks={parentLinks}
+          spouseLinks={spouseLinks}
+        />
+      )}
     </div>
   );
 }

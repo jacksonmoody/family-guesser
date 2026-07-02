@@ -24,13 +24,7 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-4 py-6">
       <header>
-        <p className="text-sm tracking-wide text-brown-500 uppercase">
-          Organizer tools
-        </p>
         <h1 className="font-display text-3xl font-semibold">Family Admin</h1>
-        <p className="mt-1 text-sm text-brown-700">
-          Add everyone to the tree, then mark who&apos;s at the reunion.
-        </p>
       </header>
       <AdminDashboard
         people={people.data ?? []}

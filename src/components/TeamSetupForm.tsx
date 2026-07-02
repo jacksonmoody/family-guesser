@@ -34,6 +34,20 @@ export function TeamSetupForm({ people }: { people: PickerPerson[] }) {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      <Card className="flex flex-col gap-2">
+        <label
+          htmlFor="team_name"
+          className="font-display text-lg font-semibold"
+        >
+          Team Name
+        </label>
+        <Input
+          id="team_name"
+          name="team_name"
+          placeholder="Moodylicious"
+          maxLength={40}
+        />
+      </Card>
       {slots.map((slot) => {
         const selected = people.find((p) => p.id === slot.value);
         return (
@@ -52,28 +66,12 @@ export function TeamSetupForm({ people }: { people: PickerPerson[] }) {
             {selected && !selected.photo_path && (
               <PhotoUpload
                 name={slot.photoField}
-                label={`Update photo of ${selected.name.split(/\s+/)[0]} (optional)`}
+                label={`Take a photo of ${selected.name.split(/\s+/)[0]}!`}
               />
             )}
           </Card>
         );
       })}
-
-      <Card className="flex flex-col gap-2">
-        <label
-          htmlFor="team_name"
-          className="font-display text-lg font-semibold"
-        >
-          Team Name
-        </label>
-        <Input
-          id="team_name"
-          name="team_name"
-          placeholder="Moodylicious"
-          maxLength={40}
-        />
-      </Card>
-
       {state?.error && (
         <p className="rounded-xl bg-terracotta-500/10 px-4 py-2 text-center text-sm text-terracotta-600">
           {state.error}

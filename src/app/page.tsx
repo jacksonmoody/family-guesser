@@ -21,7 +21,7 @@ export default async function Home() {
           07/02/2026
         </p>
         <h1 className="font-display text-3xl font-semibold text-brown-900">
-          LBI Family Guessing Game
+          LBI Family Relationship Dash
         </h1>
       </header>
 
@@ -44,7 +44,7 @@ export default async function Home() {
 
       {attending.length < 2 ? (
         <Card className="text-center text-brown-700">
-          The guest list isn&apos;t ready yet — check back soon!
+          The family tree isn&apos;t ready yet. Check back soon!
         </Card>
       ) : (
         <TeamSetupForm people={attending} />

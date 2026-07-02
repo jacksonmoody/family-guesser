@@ -2,13 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function PhotoUpload({
-  name,
-  label,
-}: {
-  name: string;
-  label: string;
-}) {
+export function PhotoUpload({ name, label }: { name: string; label: string }) {
   const [preview, setPreview] = useState<string | null>(null);
   const previewRef = useRef<string | null>(null);
 
@@ -19,7 +13,7 @@ export function PhotoUpload({
   }, []);
 
   return (
-    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-brown-300 bg-cream-50 p-3">
+    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed hover:border-solid border-brown-300 bg-cream-50 p-3 transition-all">
       {preview ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

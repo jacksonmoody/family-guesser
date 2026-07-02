@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Family Guessing Game",
-  description: "Let's guess how we are related to each other!",
+  title: "Family Relationship Dash",
+  description: "Let's find out how we are related to each other!",
 };
 
 export default function RootLayout({
