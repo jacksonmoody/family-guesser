@@ -49,10 +49,10 @@ export function TeamSetupForm({ people }: { people: PickerPerson[] }) {
               disabledId={slot.other}
               onSelect={slot.set}
             />
-            {selected && (
+            {selected && !selected.photo_path && (
               <PhotoUpload
                 name={slot.photoField}
-                label={`Snap or pick a photo of ${selected.name.split(/\s+/)[0]} (optional)`}
+                label={`Update photo of ${selected.name.split(/\s+/)[0]} (optional)`}
               />
             )}
           </Card>
