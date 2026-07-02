@@ -25,3 +25,26 @@ body {
   background-color: var(--color-cream-50);
   color: var(--color-brown-900);
 }
+
+@keyframes checking-dot {
+  0%,
+  70%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateY(-0.3em);
+  }
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label:has(input:not(:disabled)) {
+    cursor: pointer;
+  }
+}

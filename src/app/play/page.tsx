@@ -29,7 +29,7 @@ export default async function PlayPage() {
         </div>
         <Link
           href="/leaderboard"
-          className="rounded-full bg-cream-200 px-4 py-2 text-sm font-medium text-brown-700"
+          className="rounded-full bg-cream-200 px-4 py-2 text-sm font-medium text-brown-700 hover:bg-cream-300 transition-colors"
         >
           Live Leaderboard
         </Link>

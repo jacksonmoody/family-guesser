@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Gender, type Person } from "@/lib/kinship/graph";
-import { NODE_H, NODE_W, type FamilyDrop, type TreeLayout } from "@/lib/kinship/layout";
+import {
+  NODE_H,
+  NODE_W,
+  type FamilyDrop,
+  type TreeLayout,
+} from "@/lib/kinship/layout";
 import { Avatar } from "@/components/ui/Avatar";
 
 const MIN_SCALE = 0.3;
@@ -47,7 +52,15 @@ function dropPath(drop: FamilyDrop): string {
   return parts.join(" ");
 }
 
-function PersonNode({ person, x, y }: { person: Person; x: number; y: number }) {
+function PersonNode({
+  person,
+  x,
+  y,
+}: {
+  person: Person;
+  x: number;
+  y: number;
+}) {
   return (
     <div
       className="absolute z-10 flex flex-col items-center gap-1"
@@ -119,7 +132,10 @@ export function TreeCanvas({ layout }: { layout: TreeLayout }) {
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
-    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    pointers.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
     setDragging(true);
   };
 
@@ -133,11 +149,16 @@ export function TreeCanvas({ layout }: { layout: TreeLayout }) {
       const dy = event.clientY - prev.y;
       setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy }));
     } else if (active.size === 2) {
-      const other = [...active.entries()].find(([id]) => id !== event.pointerId)?.[1];
+      const other = [...active.entries()].find(
+        ([id]) => id !== event.pointerId,
+      )?.[1];
       const rect = viewportRef.current?.getBoundingClientRect();
       if (other && rect) {
         const distPrev = Math.hypot(prev.x - other.x, prev.y - other.y);
-        const distNow = Math.hypot(event.clientX - other.x, event.clientY - other.y);
+        const distNow = Math.hypot(
+          event.clientX - other.x,
+          event.clientY - other.y,
+        );
         if (distPrev > 0) {
           const midX = (event.clientX + other.x) / 2 - rect.left;
           const midY = (event.clientY + other.y) / 2 - rect.top;
@@ -146,7 +167,10 @@ export function TreeCanvas({ layout }: { layout: TreeLayout }) {
       }
     }
 
-    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    pointers.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
   };
 
   const onPointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -240,7 +264,21 @@ export function TreeCanvas({ layout }: { layout: TreeLayout }) {
           aria-label="Reset view"
           className="flex size-8 items-center justify-center rounded-lg border border-cream-300 bg-cream-50 text-xs font-semibold text-brown-700 shadow-sm hover:bg-cream-200"
         >
-          ⤢
+          <svg
+            aria-hidden="true"
+            className="size-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+            <path d="M16 3h3a2 2 0 0 1 2 2v3" />
+            <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+          </svg>
         </button>
       </div>
     </div>

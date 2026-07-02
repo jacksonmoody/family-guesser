@@ -17,12 +17,9 @@ export default async function LeaderboardPage() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-6">
       <header className="text-center">
-        <p className="text-sm tracking-wide text-brown-500 uppercase">
-          Live standings
-        </p>
-        <h1 className="font-display text-3xl font-semibold">Leaderboard</h1>
-        <p className="mt-1 text-sm text-brown-700">
-          Best 5-minute run per team · updates live
+        <h1 className="text-4xl font-semibold">Leaderboard</h1>
+        <p className="mt-3 text-sm text-brown-700">
+          Based on the best 5-minute score of each team
         </p>
       </header>
 
@@ -39,12 +36,12 @@ export default async function LeaderboardPage() {
       <div className="flex flex-col gap-2">
         <Link href="/play" className="w-full">
           <Button variant="accent" className="w-full">
-            {teamId ? "Play another run" : "Join the game"}
+            {teamId ? "Play Again" : "Join the Game"}
           </Button>
         </Link>
         {treeUnlocked && (
           <Link href="/tree" className="text-center text-brown-500 underline">
-            Explore the family tree
+            Explore the Family Tree
           </Link>
         )}
       </div>

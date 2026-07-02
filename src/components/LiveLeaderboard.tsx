@@ -39,11 +39,7 @@ export function LiveLeaderboard({
   }, []);
 
   if (rows.length === 0) {
-    return (
-      <Card className="text-center text-brown-700">
-        No teams yet — be the first!
-      </Card>
-    );
+    return <Card className="text-center text-brown-700">No Teams Yet!</Card>;
   }
 
   return (
@@ -56,7 +52,9 @@ export function LiveLeaderboard({
           <li key={row.id}>
             <Card
               className={`flex items-center gap-3 py-3 ${
-                isOwn ? "border-terracotta-500 ring-1 ring-terracotta-500/40" : ""
+                isOwn
+                  ? "border-terracotta-500 ring-1 ring-terracotta-500/40"
+                  : ""
               }`}
             >
               <span

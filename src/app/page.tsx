@@ -26,7 +26,7 @@ export default async function Home() {
       </header>
 
       {team ? (
-        <Card className="flex flex-col items-center gap-3 text-center">
+        <Card className="flex flex-col items-center gap-3 text-center my-4">
           <p className="text-brown-700">
             This device already has a team:{" "}
             <span className="font-display font-semibold">{team.name}</span>

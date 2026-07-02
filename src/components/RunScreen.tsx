@@ -17,7 +17,11 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 
 const TIER_LABEL = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
-const TIER_TONE = { easy: "sage", medium: "brown", hard: "terracotta" } as const;
+const TIER_TONE = {
+  easy: "sage",
+  medium: "brown",
+  hard: "terracotta",
+} as const;
 
 function useCountdown(run: RunPayload | null): number {
   const [remaining, setRemaining] = useState(Infinity);
@@ -89,8 +93,21 @@ export function RunScreen({
 
   const handleSkip = () => {
     if (!question || pending) return;
+    setError(null);
+    setAnswer("");
+    setFeedback({
+      verdict: "skipped",
+      points: 0,
+      correctSentence: "Calculating Answer...",
+    });
     startTransition(async () => {
-      applyResult(await skipQuestion(question.id));
+      const result = await skipQuestion(question.id);
+      if (result.error && !result.run) {
+        setFeedback(null);
+        setError(result.error);
+        return;
+      }
+      applyResult(result);
     });
   };
 
@@ -113,11 +130,11 @@ export function RunScreen({
             </p>
             <p className="text-brown-700">
               {run.correctCount} correct out of {run.answeredCount} answered
-              {run.hardMode ? " · hard mode" : ""}
+              {run.hardMode ? " · Expert Mode" : ""}
             </p>
             <Link href="/leaderboard" className="w-full">
               <Button variant="primary" className="w-full">
-                See the leaderboard
+                View the Leaderboard
               </Button>
             </Link>
           </Card>
@@ -126,13 +143,14 @@ export function RunScreen({
         <Card className="flex flex-col gap-4">
           <div>
             <h2 className="font-display text-xl font-semibold">
-              {finished ? "Another round?" : "Ready to play?"}
+              {finished ? "Another Round?" : "Ready to Play?"}
             </h2>
-            <p className="mt-1 text-sm text-brown-700">
-              You&apos;ll get 5 minutes to answer as many &quot;how are they
-              related?&quot; questions as you can. Harder pairs are worth more
-              points, and your best run counts.
-            </p>
+            {!finished && (
+              <p className="mt-1 text-sm text-brown-700">
+                You&apos;ll have 5 minutes to answer as many questions as you
+                can. Harder pairings are worth more points. Good luck!
+              </p>
+            )}
           </div>
 
           <label className="flex items-start gap-3 rounded-xl border border-cream-300 bg-cream-50 p-3">
@@ -143,18 +161,16 @@ export function RunScreen({
               className="mt-1 size-5 accent-terracotta-500"
             />
             <span>
-              <span className="font-medium text-brown-900">
-                Hard mode · 1.5× points
-              </span>
+              <span className="font-medium text-brown-900">Expert Mode</span>
               <span className="block text-sm text-brown-700">
-                Questions can include family members who aren&apos;t at the
-                reunion. Risky, but the points are juicy.
+                Questions can include family members who aren&apos;t here! Each
+                correct answer is worth 1.5x points :)
               </span>
             </span>
           </label>
 
           <Button variant="accent" onClick={handleStart} disabled={pending}>
-            {pending ? "Shuffling the family…" : "Start the clock"}
+            {pending ? "Picking Questions..." : "Start the Clock"}
           </Button>
           {error && (
             <p className="text-center text-sm text-terracotta-600">{error}</p>
@@ -163,7 +179,7 @@ export function RunScreen({
 
         {treeUnlocked && (
           <Link href="/tree" className="text-center text-brown-500 underline">
-            Study the family tree
+            Study the Family Tree
           </Link>
         )}
       </div>
@@ -173,6 +189,10 @@ export function RunScreen({
   const minutes = Math.floor(remaining / 60);
   const seconds = Math.floor(remaining % 60);
   const urgent = remaining <= 60;
+  const loadingSkippedQuestion =
+    pending &&
+    feedback?.verdict === "skipped" &&
+    feedback.correctSentence === "Loading the answer";
 
   // ---------- Active run ----------
   return (
@@ -180,13 +200,17 @@ export function RunScreen({
       <div className="flex items-center justify-between">
         <span
           className={`rounded-full px-4 py-1.5 font-display text-lg font-semibold tabular-nums ${
-            urgent ? "bg-terracotta-500 text-cream-50" : "bg-brown-700 text-cream-50"
+            urgent
+              ? "bg-terracotta-500 text-cream-50"
+              : "bg-brown-700 text-cream-50"
           }`}
         >
           {minutes}:{String(seconds).padStart(2, "0")}
         </span>
         <div className="text-right">
-          <p className="text-xs tracking-wide text-brown-500 uppercase">Score</p>
+          <p className="text-xs tracking-wide text-brown-500 uppercase">
+            Score
+          </p>
           <p className="font-display text-xl font-semibold tabular-nums">
             {run.score}
           </p>
@@ -205,15 +229,24 @@ export function RunScreen({
           ) : (
             <>
               <p className="font-display text-3xl font-semibold text-terracotta-600">
-                {feedback.verdict === "skipped" ? "Skipped" : "Not quite…"}
+                {feedback.verdict === "skipped" ? "Skipped" : "Not Quite..."}
               </p>
               <p className="text-brown-700">
-                The answer: <span className="font-medium">{feedback.correctSentence}</span>
+                <span className="font-medium">{feedback.correctSentence}.</span>
               </p>
             </>
           )}
-          <Button variant="primary" onClick={dismissFeedback} className="w-full">
-            {timeUp || !question ? "Finish" : "Next question"}
+          <Button
+            variant="primary"
+            onClick={dismissFeedback}
+            disabled={loadingSkippedQuestion}
+            className="w-full"
+          >
+            {loadingSkippedQuestion
+              ? "Loading Next Question..."
+              : timeUp || !question
+                ? "Finish"
+                : "Next Question"}
           </Button>
         </Card>
       ) : question ? (
@@ -222,13 +255,16 @@ export function RunScreen({
             <Badge tone={TIER_TONE[question.tier]}>
               {TIER_LABEL[question.tier]}
             </Badge>
-            {run.hardMode && <Badge tone="terracotta">Hard mode</Badge>}
           </div>
 
           <div className="flex items-center justify-center gap-4">
             {[question.personA, question.personB].map((person, index) => (
               <div key={person.id} className="flex flex-col items-center gap-2">
-                <Avatar name={person.name} photoPath={person.photoPath} size="lg" />
+                <Avatar
+                  name={person.name}
+                  photoPath={person.photoPath}
+                  size="lg"
+                />
                 <p className="max-w-28 text-center text-sm font-medium leading-tight">
                   {person.name}
                 </p>
@@ -259,7 +295,36 @@ export function RunScreen({
                 disabled={pending || !answer.trim()}
                 className="flex-1"
               >
-                {pending ? "Checking…" : "Submit"}
+                {pending ? (
+                  <span
+                    className="inline-flex items-center gap-1"
+                    aria-live="polite"
+                  >
+                    <span>Checking</span>
+                    <span
+                      className="inline-flex w-5 justify-between"
+                      aria-hidden="true"
+                    >
+                      <span className="inline-block motion-safe:animate-[checking-dot_1200ms_ease-in-out_infinite]">
+                        .
+                      </span>
+                      <span
+                        className="inline-block motion-safe:animate-[checking-dot_1200ms_ease-in-out_infinite]"
+                        style={{ animationDelay: "240ms" }}
+                      >
+                        .
+                      </span>
+                      <span
+                        className="inline-block motion-safe:animate-[checking-dot_1200ms_ease-in-out_infinite]"
+                        style={{ animationDelay: "480ms" }}
+                      >
+                        .
+                      </span>
+                    </span>
+                  </span>
+                ) : (
+                  "Submit"
+                )}
               </Button>
               <Button
                 type="button"
@@ -277,7 +342,7 @@ export function RunScreen({
         </Card>
       ) : (
         <Card className="text-center text-brown-700">
-          {error ?? "No more questions available — nice work!"}
+          {error ?? "No More Questions Available — Nice Work!"}
         </Card>
       )}
     </div>

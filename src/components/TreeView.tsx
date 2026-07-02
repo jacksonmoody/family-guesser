@@ -2,14 +2,12 @@ import { type FamilyGraph, type Person } from "@/lib/kinship/graph";
 import { layoutTree } from "@/lib/kinship/layout";
 import { TreeCanvas } from "@/components/TreeCanvas";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
 
 function PersonChip({ person }: { person: Person }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-cream-300 bg-cream-100 py-1 pl-1 pr-3 shadow-sm">
       <Avatar name={person.name} photoPath={person.photoPath} size="sm" />
       <span className="text-sm font-medium">{person.name}</span>
-      {person.attending && <Badge tone="sage">Here!</Badge>}
     </span>
   );
 }
@@ -25,10 +23,8 @@ function Legend() {
         <span className={`${swatch} rounded-full`} /> Female
       </span>
       <span className="inline-flex items-center gap-1.5">
-        <span className={`${swatch} rotate-45 rounded-[3px]`} /> Other
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <span className="inline-block size-2 rounded-full bg-sage-500" /> Attending
+        <span className="inline-block size-2 rounded-full bg-sage-500" /> Here
+        Today!
       </span>
     </div>
   );
