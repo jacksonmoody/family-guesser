@@ -123,14 +123,14 @@ export function RunScreen({
         {finished && run && (
           <Card className="flex flex-col items-center gap-2 text-center">
             <p className="text-sm tracking-wide text-brown-500 uppercase">
-              Time&apos;s up!
+              Time&apos;s up! Your score was:
             </p>
             <p className="font-display text-5xl font-semibold text-terracotta-500">
               {run.score}
             </p>
             <p className="text-brown-700">
-              {run.correctCount} correct out of {run.answeredCount} answered
-              {run.hardMode ? " · Expert Mode" : ""}
+              {run.correctCount} correct out of {run.answeredCount} questions
+              answered.
             </p>
             <Link href="/leaderboard" className="w-full">
               <Button variant="primary" className="w-full">

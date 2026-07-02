@@ -82,7 +82,6 @@ export function LiveLeaderboard({
                 <span className="block truncate font-medium">{row.name}</span>
                 <span className="block text-xs text-brown-500">
                   {row.correct_count ?? 0} correct
-                  {row.hard_mode ? " · best run on hard mode" : ""}
                 </span>
               </span>
               {row.hard_mode && <Badge tone="terracotta">1.5×</Badge>}
